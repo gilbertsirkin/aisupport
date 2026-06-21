@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 
 interface Wallet {
   available_balance: number
@@ -108,7 +109,11 @@ export default function WalletPage() {
             </div>
             <span className="font-semibold">Wallet</span>
           </div>
-          <Link href="/dashboard" className="text-xs text-zinc-400 hover:text-white transition-colors">← Dashboard</Link>
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="text-xs text-zinc-400 hover:text-white transition-colors">← Dashboard</Link>
+            <div className="h-4 w-px bg-[#1E2A3B]" />
+            <LogoutButton />
+          </div>
         </div>
       </nav>
 

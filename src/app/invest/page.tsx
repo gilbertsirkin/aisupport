@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 
 interface Plan {
   id: string
@@ -28,19 +30,17 @@ const TIER_STYLES: Record<string, { border: string; glow: string; badge: string 
   WERTCHAIN_ELITE:        { border: 'border-amber-500/40',   glow: 'hover:border-amber-400/60',   badge: 'bg-amber-500/20 text-amber-300' },
 }
 
-const CURRENCIES = ['USDT_TRC20', 'USDT_ERC20', 'BTC']
-
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n)
 
 export default function InvestPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [plans, setPlans] = useState<Plan[]>([])
   const [wallet, setWallet] = useState<Wallet | null>(null)
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Plan | null>(null)
   const [amount, setAmount] = useState('')
-  const [currency, setCurrency] = useState('USDT_TRC20')
   const [autoReinvest, setAutoReinvest] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<any>(null)
@@ -78,9 +78,25 @@ export default function InvestPage() {
       const res = await fetch('/api/contracts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan_id: selected.id, amount, currency, auto_reinvest: autoReinvest }),
+        body: JSON.stringify({ plan_id: selected.id, amount, auto_reinvest: autoReinvest }),
       })
       const data = await res.json()
+
+      if (res.status === 402 && data.redirect_to_deposit) {
+        // Insufficient balance — no contract was created. Send the user
+        // to a plan-aware deposit page instead of showing a generic error.
+        const d = data.redirect_to_deposit
+        const qs = new URLSearchParams({
+          plan_id: d.plan_id,
+          plan_label: d.plan_label,
+          amount_needed: d.amount_needed,
+          current_balance: d.current_balance,
+          shortfall: d.shortfall,
+        })
+        router.push(`/deposit?${qs.toString()}`)
+        return
+      }
+
       if (!res.ok) throw new Error(data.error)
       setResult(data)
     } catch (e: any) {
@@ -112,6 +128,8 @@ export default function InvestPage() {
           <div className="flex items-center gap-4 text-xs text-zinc-400">
             {wallet && <span>Available: <span className="text-amber-400 font-mono">{fmt(wallet.available_balance)}</span></span>}
             <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
+            <div className="h-4 w-px bg-[#1E2A3B]" />
+            <LogoutButton />
           </div>
         </div>
       </nav>
@@ -144,22 +162,6 @@ export default function InvestPage() {
                 <p className="text-xs text-zinc-600 mt-1">
                   Min {fmt(selected.min_amount)} {selected.max_amount ? `· Max ${fmt(selected.max_amount)}` : '· No maximum'}
                 </p>
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-500 uppercase tracking-widest block mb-1.5">Payment Currency</label>
-                <div className="flex gap-2">
-                  {CURRENCIES.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => setCurrency(c)}
-                      className={`px-3 py-2 rounded-lg border text-xs font-mono transition-colors
-                        ${currency === c ? 'border-amber-500/60 bg-amber-500/10 text-amber-400' : 'border-[#1E2A3B] text-zinc-500 hover:border-zinc-600'}`}
-                    >
-                      {c.replace('_', ' ')}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-lg border border-[#1E2A3B] bg-[#111827]">
@@ -213,27 +215,31 @@ export default function InvestPage() {
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-6 space-y-4">
             <div className="flex items-center gap-2">
               <span className="text-emerald-400 text-lg">✓</span>
-              <h2 className="text-white font-semibold">Contract created — send your deposit</h2>
+              <h2 className="text-white font-semibold">Investment is now active</h2>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between border-b border-[#1E2A3B] py-2">
-                <span className="text-zinc-500">Send exactly</span>
-                <span className="text-white font-mono">{result.deposit_instruction?.send_exactly} {result.deposit_instruction?.currency}</span>
+                <span className="text-zinc-500">Plan</span>
+                <span className="text-white font-mono">{result.contract?.plan_name}</span>
               </div>
               <div className="flex justify-between border-b border-[#1E2A3B] py-2">
-                <span className="text-zinc-500">To address</span>
-                <span className="text-amber-400 font-mono text-xs break-all">{result.deposit_instruction?.to_address}</span>
+                <span className="text-zinc-500">Principal</span>
+                <span className="text-white font-mono">${Number(result.contract?.principal_amount).toLocaleString()}</span>
               </div>
               <div className="flex justify-between border-b border-[#1E2A3B] py-2">
-                <span className="text-zinc-500">Network</span>
-                <span className="text-white font-mono">{result.deposit_instruction?.payment_method}</span>
+                <span className="text-zinc-500">Daily profit</span>
+                <span className="text-emerald-400 font-mono">+${Number(result.contract?.daily_profit_amount).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between border-b border-[#1E2A3B] py-2">
+                <span className="text-zinc-500">Expected total profit</span>
+                <span className="text-emerald-400 font-mono">+${Number(result.contract?.expected_profit).toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-zinc-500">Deposit ID</span>
-                <span className="text-zinc-400 font-mono text-xs">{result.deposit_instruction?.deposit_id}</span>
+                <span className="text-zinc-500">Matures in</span>
+                <span className="text-white font-mono">{result.contract?.duration_days} days</span>
               </div>
             </div>
-            <p className="text-xs text-zinc-500">{result.deposit_instruction?.next_step}</p>
+            <p className="text-xs text-zinc-500">{result.message}</p>
             <div className="flex gap-3">
               <Link href="/dashboard" className="flex-1 py-2.5 rounded-lg bg-[#111827] border border-[#1E2A3B] text-white text-sm font-medium text-center hover:border-zinc-600 transition-colors">
                 Go to Dashboard
@@ -245,6 +251,7 @@ export default function InvestPage() {
                 Invest Again
               </button>
             </div>
+
           </div>
         )}
 

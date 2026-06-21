@@ -8,6 +8,7 @@ import Upgrade from '@/components/Home/upgrade'
 import Perks from '@/components/Home/perks'
 import GlobalReach from '@/components/Home/GlobalReach'
 import Faq from '@/components/Home/Faq'
+import Legal from '@/components/Home/Legal'
 
 export const metadata: Metadata = {
   title: 'Wertchain | Institutional Fixed-Yield Investment Platform',
@@ -33,6 +34,7 @@ export default function Home() {
       <Upgrade />
       <Perks />
       <Faq />
+      <Legal />
     </main>
   )
 }

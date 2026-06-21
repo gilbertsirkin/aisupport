@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 
 // ── types ──────────────────────────────────────────────────────────────────
 interface Wallet {
@@ -79,10 +80,12 @@ const TX_ICONS: Record<string, string> = {
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n)
 
-const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-
-function daysLeft(maturity: string) {
+const fmtDate = (d: string | null | undefined) => {
+  if (!d) return "Pending activation"
+  return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+}
+function daysLeft(maturity: string | null | undefined) {
+  if (!maturity) return null
   const diff = new Date(maturity).getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / 86400000))
 }
@@ -180,10 +183,19 @@ export default function Dashboard() {
             </div>
             <span className="font-semibold text-white">Wertchain</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link href="/invest" className="text-xs text-zinc-400 hover:text-white transition-colors">Invest</Link>
             <Link href="/wallet" className="text-xs text-zinc-400 hover:text-white transition-colors">Wallet</Link>
-            <span className="text-xs text-zinc-600">{user?.full_name}</span>
+            <div className="h-4 w-px bg-[#1E2A3B]" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <span className="text-amber-400 text-[10px] font-semibold">
+                  {(user?.full_name ?? "U").charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="text-xs text-zinc-500 hidden sm:inline">{user?.full_name}</span>
+            </div>
+            <LogoutButton />
           </div>
         </div>
       </nav>
@@ -248,7 +260,7 @@ export default function Dashboard() {
                       <ProgressBar value={c.profit_credited} max={c.expected_profit} />
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex gap-4 text-xs text-zinc-500">
-                          <span>{daysLeft(c.maturity_date)} days left</span>
+                          <span>{daysLeft(c.maturity_date) !== null ? `${daysLeft(c.maturity_date)} days left` : "Awaiting activation"}</span>
                           <span>+{fmt(c.daily_profit_amount)}/day</span>
                         </div>
                         <button

@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 import { useState, useEffect, useCallback } from 'react'
 
 // ── types ──────────────────────────────────────────────────────────────────
@@ -292,6 +294,9 @@ export default function AdminPanel() {
                 <span>USERS <span className="text-white">{stats.totalUsers}</span></span>
               </>
             )}
+            <div className="h-4 w-px bg-[#1E2A3B]" />
+            <Link href="/dashboard" className="hover:text-white transition-colors font-sans">Dashboard</Link>
+            <LogoutButton className="text-xs text-zinc-500 hover:text-red-400 transition-colors font-sans" />
           </div>
         </div>
       </div>
