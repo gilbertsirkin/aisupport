@@ -30,7 +30,7 @@ export async function GET() {
     adminClient.from("wc_migrations").select("*", { count: "exact", head: true }).eq("status", "PENDING"),
     adminClient.from("wc_contracts").select("*", { count: "exact", head: true }).eq("state", "ACTIVE"),
     adminClient.from("wc_users").select("*", { count: "exact", head: true }),
-    adminClient.from("wc_deposits").select("*, wc_users(full_name, email)").eq("status", "PENDING").order("created_at", { ascending: false }).limit(50),
+    adminClient.from("wc_deposits").select("*").eq("status", "PENDING").order("created_at", { ascending: false }).limit(50),
     adminClient.from("wc_withdrawals").select("*, wc_users(full_name, email)").eq("status", "PENDING").order("created_at", { ascending: false }).limit(50),
     adminClient.from("wc_migrations").select("*, wc_users(full_name, email)").eq("status", "PENDING").order("created_at", { ascending: false }).limit(50),
     adminClient.from("wc_users").select("*, wc_wallet_balances(available_balance, locked_capital)").order("created_at", { ascending: false }).limit(100),
