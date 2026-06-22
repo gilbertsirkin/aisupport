@@ -3,6 +3,7 @@ import './globals.css'
 import { ThemeProvider } from 'next-themes'
 import ScrollToTop from '@/components/ScrollToTop'
 import Aoscompo from '@/utils/aos'
+import TawkChat from '@/components/TawkChat'
 import { Metadata } from 'next'
 
 const font = DM_Sans({ subsets: ['latin'] })
@@ -27,6 +28,7 @@ export default function RootLayout({
             {children}
           </Aoscompo>
           <ScrollToTop />
+          <TawkChat />
         </ThemeProvider>
       </body>
     </html>

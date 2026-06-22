@@ -42,9 +42,29 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && (pathname === '/signin' || pathname === '/signup')) {
+    const { data: adminRow } = await supabase
+      .from('wc_admins')
+      .select('id, is_active')
+      .eq('user_id', user.id)
+      .single()
+
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = adminRow?.is_active ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  if (user && pathname.startsWith('/dashboard')) {
+    const { data: adminRow } = await supabase
+      .from('wc_admins')
+      .select('id, is_active')
+      .eq('user_id', user.id)
+      .single()
+
+    if (adminRow?.is_active) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

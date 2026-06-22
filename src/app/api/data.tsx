@@ -1,8 +1,8 @@
 export const footerlabels: { label: string; herf: string }[] = [
-  { label: 'Risk Disclosure', herf: '/#legal' },
-  { label: 'Terms of Service', herf: '/#legal' },
-  { label: 'Privacy Policy', herf: '/#legal' },
-  { label: 'AML Policy', herf: '/#legal' },
+  { label: 'Terms of Service', herf: '/terms' },
+  { label: 'Privacy Policy', herf: '/privacy' },
+  { label: 'AML Policy', herf: '/aml' },
+  { label: 'Contact Us', herf: '/contact' },
 ]
 
 export const pricedata: {

@@ -19,18 +19,17 @@ const Footer: FC = () => {
               Master Ledger with double-entry accounting. Every balance is fully auditable.
             </p>
             <div className="flex gap-6 items-center relative z-1">
-              <Link href="https://www.facebook.com/" className="group">
-                <Icon icon="fa6-brands:facebook-f" width="24" height="24" className="text-white group-hover:text-primary" />
-              </Link>
-              <Link href="https://www.instagram.com/" className="group">
-                <Icon icon="fa6-brands:instagram" width="24" height="24" className="text-white group-hover:text-primary" />
-              </Link>
-              <Link href="https://www.twitter.com/" className="group">
-                <Icon icon="fa6-brands:x-twitter" width="24" height="24" className="text-white group-hover:text-primary" />
-              </Link>
+              <span className="opacity-30 cursor-not-allowed" title="Coming soon" aria-disabled="true">
+                <Icon icon="fa6-brands:facebook-f" width="24" height="24" className="text-white" />
+              </span>
+              <span className="opacity-30 cursor-not-allowed" title="Coming soon" aria-disabled="true">
+                <Icon icon="fa6-brands:instagram" width="24" height="24" className="text-white" />
+              </span>
+              <span className="opacity-30 cursor-not-allowed" title="Coming soon" aria-disabled="true">
+                <Icon icon="fa6-brands:x-twitter" width="24" height="24" className="text-white" />
+              </span>
             </div>
           </div>
-
           <div className="lg:col-span-2 md:col-span-3 col-span-6">
             <h4 className="text-white mb-4 font-medium text-24">Platform</h4>
             <ul>
@@ -43,7 +42,6 @@ const Footer: FC = () => {
               ))}
             </ul>
           </div>
-
           <div className="lg:col-span-2 md:col-span-3 col-span-6">
             <h4 className="text-white mb-4 font-medium text-24">Legal</h4>
             <ul>
@@ -56,16 +54,16 @@ const Footer: FC = () => {
               ))}
             </ul>
           </div>
-
           <div className="lg:col-span-3 md:col-span-4 col-span-6">
-            <h3 className="text-white text-24 font-medium mb-4">Download App</h3>
+            <h3 className="text-white text-24 font-medium mb-1">Download App</h3>
+            <p className="text-white/30 text-xs mb-4">Coming soon</p>
             <div className="flex flex-col gap-4">
-              <Link href="#">
-                <Image src="/images/footer/app-store-bedge.svg" alt="App Store" width={126} height={23} />
-              </Link>
-              <Link href="#">
-                <Image src="/images/footer/app-store.svg" alt="Google Play" width={126} height={23} />
-              </Link>
+              <span className="opacity-30 cursor-not-allowed w-fit" title="Coming soon" aria-disabled="true">
+                <Image src="/images/footer/app-store-bedge.svg" alt="App Store — coming soon" width={126} height={23} />
+              </span>
+              <span className="opacity-30 cursor-not-allowed w-fit" title="Coming soon" aria-disabled="true">
+                <Image src="/images/footer/app-store.svg" alt="Google Play — coming soon" width={126} height={23} />
+              </span>
             </div>
             <div className="mt-6">
               <p className="text-white/40 text-xs leading-relaxed">
@@ -75,7 +73,6 @@ const Footer: FC = () => {
             </div>
           </div>
         </div>
-
         <Separator className="bg-white/10" />
         <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-white/40 text-sm">

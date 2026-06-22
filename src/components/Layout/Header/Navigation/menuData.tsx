@@ -6,4 +6,5 @@ export const headerData: HeaderItem[] = [
   { label: 'Portfolio',    href: '/#portfolio' },
   { label: 'Why Wertchain', href: '/#upgrade' },
   { label: 'FAQs',         href: '/#faq' },
+  { label: 'Contact',      href: '/contact' },
 ]
