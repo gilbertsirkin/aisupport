@@ -184,6 +184,7 @@ export default function Dashboard() {
             <span className="font-semibold text-white">Wertchain</span>
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/deposit" className="text-xs text-zinc-400 hover:text-white transition-colors">Deposit</Link>
             <Link href="/invest" className="text-xs text-zinc-400 hover:text-white transition-colors">Invest</Link>
             <Link href="/wallet" className="text-xs text-zinc-400 hover:text-white transition-colors">Wallet</Link>
             <div className="h-4 w-px bg-[#1E2A3B]" />
@@ -207,14 +208,18 @@ export default function Dashboard() {
           <div className="col-span-2 sm:col-span-2 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-900/20 to-transparent p-5">
             <p className="text-xs text-amber-400/70 uppercase tracking-widest mb-1">Available Balance</p>
             <p className="text-3xl font-mono font-bold text-amber-400">{fmt(wallet?.available_balance ?? 0)}</p>
-            <div className="mt-3 flex gap-2">
-              <Link href="/wallet?action=withdraw"
+            <div className="mt-3 flex gap-2 flex-wrap">
+              <Link href="/deposit"
                 className="px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold transition-colors">
-                Withdraw
+                Deposit
               </Link>
               <Link href="/invest"
                 className="px-3 py-1.5 rounded border border-amber-500/40 hover:border-amber-400 text-amber-400 text-xs font-medium transition-colors">
                 Invest
+              </Link>
+              <Link href="/wallet"
+                className="px-3 py-1.5 rounded border border-[#1E2A3B] hover:border-zinc-600 text-zinc-400 text-xs font-medium transition-colors">
+                Withdraw
               </Link>
             </div>
           </div>
@@ -226,6 +231,15 @@ export default function Dashboard() {
             <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Pending Release</p>
             <p className="text-xl font-mono font-semibold text-white">{fmt(wallet?.pending_release_capital ?? 0)}</p>
           </div>
+          {(wallet?.pending_profit ?? 0) > 0 && (
+            <div className="col-span-2 sm:col-span-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-emerald-400/70 uppercase tracking-widest mb-0.5">Accruing Profit</p>
+                <p className="text-sm text-zinc-400">Profit credited to your balance at contract maturity</p>
+              </div>
+              <p className="text-xl font-mono font-semibold text-emerald-400">+{fmt(wallet?.pending_profit ?? 0)}</p>
+            </div>
+          )}
         </div>
 
         {/* ── active contracts ── */}
