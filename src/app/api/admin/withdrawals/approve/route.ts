@@ -29,6 +29,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient, postLedgerTransaction } from "@/lib/ledger";
+import { sendWithdrawalApprovedEmail, sendWithdrawalRejectedEmail } from "@/lib/email/mailer";
 
 export async function POST(req: NextRequest) {
   // 1. Auth
@@ -176,6 +177,14 @@ export async function POST(req: NextRequest) {
         reason: rejection_reason!,
       });
 
+      adminClient.from("wc_users").select("email, full_name").eq("id", withdrawal.user_id).single()
+        .then(({ data: u }) => {
+          if (u) sendWithdrawalRejectedEmail(
+            { email: u.email, full_name: u.full_name },
+            { amount: Number(totalStr), rejection_reason: rejection_reason! }
+          )
+        }).catch(() => {})
+
       return NextResponse.json({
         message: "Withdrawal rejected. Funds returned to user wallet.",
         withdrawal_id,
@@ -279,6 +288,14 @@ export async function POST(req: NextRequest) {
       reason: admin_notes ?? "Withdrawal approved by admin",
       ledger_tx_id: transactionId,
     });
+
+    adminClient.from("wc_users").select("email, full_name").eq("id", withdrawal.user_id).single()
+      .then(({ data: u }) => {
+        if (u) sendWithdrawalApprovedEmail(
+          { email: u.email, full_name: u.full_name },
+          { amount: Number(totalStr), withdrawal_type: withdrawal.withdrawal_type, tx_hash: tx_hash }
+        )
+      }).catch(() => {})
 
     return NextResponse.json({
       message: "Withdrawal approved.",

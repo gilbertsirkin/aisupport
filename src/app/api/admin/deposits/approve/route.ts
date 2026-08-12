@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient, postLedgerTransaction } from "@/lib/ledger";
+import { sendDepositApprovedEmail, sendDepositRejectedEmail } from "@/lib/email/mailer";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -110,6 +111,14 @@ export async function POST(req: NextRequest) {
       reason: rejection_reason!,
     });
 
+    adminClient.from("wc_users").select("email, full_name").eq("id", userId).single()
+      .then(({ data: u }) => {
+        if (u) sendDepositRejectedEmail(
+          { email: u.email, full_name: u.full_name },
+          { amount, currency: deposit.currency, rejection_reason: rejection_reason! }
+        )
+      }).catch(() => {})
+
     return NextResponse.json({ message: "Deposit rejected.", deposit_id });
   }
 
@@ -181,6 +190,14 @@ export async function POST(req: NextRequest) {
       },
       reason: admin_notes ?? "Deposit confirmed by admin",
     });
+
+    adminClient.from("wc_users").select("email, full_name").eq("id", userId).single()
+      .then(({ data: u }) => {
+        if (u) sendDepositApprovedEmail(
+          { email: u.email, full_name: u.full_name },
+          { amount, currency: deposit.currency, payment_reference: deposit.payment_reference ?? "" }
+        )
+      }).catch(() => {})
 
     return NextResponse.json({
       message: `Deposit approved. $${amount.toFixed(2)} credited to user available balance.`,

@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient } from "@/lib/ledger";
+import { sendDepositSubmittedEmail } from "@/lib/email/mailer";
 
 export async function POST(req: NextRequest) {
   // 1. Auth
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   // 3. Fetch deposit — must belong to this user
   const { data: deposit, error: fetchError } = await adminClient
     .from("wc_deposits")
-    .select("id, user_id, status, payment_reference, metadata")
+    .select("id, user_id, amount, currency, status, payment_reference, metadata")
     .eq("id", deposit_id)
     .single();
 
@@ -121,6 +122,16 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+
+  // Fire email non-blocking — failure must not break the response
+  adminClient.from("wc_users").select("email, full_name").eq("id", deposit.user_id).single()
+    .then(({ data: u }) => {
+      if (u) sendDepositSubmittedEmail(
+        { email: u.email, full_name: u.full_name },
+        { amount: Number(deposit.amount), currency: deposit.currency, payment_reference: txHashClean, created_at: new Date().toISOString() }
+      )
+    })
+    .catch(() => {})
 
   return NextResponse.json({
     message: "Transaction hash submitted. Your deposit is now queued for admin review.",

@@ -23,6 +23,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient, postLedgerTransaction } from "@/lib/ledger";
+import { sendContractCreatedEmail } from "@/lib/email/mailer";
 
 export async function POST(req: NextRequest) {
   // 1. Authenticate
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
   // 4. Validate user account
   const { data: userData, error: userError } = await adminClient
     .from("wc_users")
-    .select("id, is_active, is_suspended, kyc_status")
+    .select("id, email, full_name, is_active, is_suspended, kyc_status")
     .eq("id", user.id)
     .single();
 
@@ -241,6 +242,18 @@ export async function POST(req: NextRequest) {
     // the ledger by the nightly reconciliation job.
     console.error("Wallet balance update error (ledger already posted):", balanceUpdateError);
   }
+
+  // Fire email non-blocking
+  sendContractCreatedEmail(
+    { email: userData.email, full_name: userData.full_name },
+    {
+      plan_tier: plan.tier,
+      principal: amountNum,
+      apy: Number(profitRate),
+      term_days: durationDays,
+      matures_at: maturityDate.toISOString(),
+    }
+  ).catch(() => {})
 
   return NextResponse.json(
     {

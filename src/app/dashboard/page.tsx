@@ -1,5 +1,3 @@
-"use client"
-
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
@@ -7,14 +5,12 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
 
-// ── types ──────────────────────────────────────────────────────────────────
 interface Wallet {
   available_balance: number
   locked_capital: number
   pending_release_capital: number
   pending_profit: number
 }
-
 interface Contract {
   id: string
   plan_tier: string
@@ -28,7 +24,6 @@ interface Contract {
   maturity_date: string
   profit_rate_snapshot: number
 }
-
 interface LedgerTx {
   id: string
   entry_type: string
@@ -39,67 +34,23 @@ interface LedgerTx {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  WERTCHAIN_START:        'Start',
-  WERTCHAIN_GROWTH:       'Growth',
-  WERTCHAIN_PROFESSIONAL: 'Professional',
-  WERTCHAIN_ELITE:        'Elite',
+  WERTCHAIN_START: 'Start', WERTCHAIN_GROWTH: 'Growth',
+  WERTCHAIN_PROFESSIONAL: 'Professional', WERTCHAIN_ELITE: 'Elite',
 }
-
-const PLAN_COLORS: Record<string, string> = {
-  WERTCHAIN_START:        'from-blue-900/40 to-blue-800/20 border-blue-500/30',
-  WERTCHAIN_GROWTH:       'from-emerald-900/40 to-emerald-800/20 border-emerald-500/30',
-  WERTCHAIN_PROFESSIONAL: 'from-purple-900/40 to-purple-800/20 border-purple-500/30',
-  WERTCHAIN_ELITE:        'from-amber-900/40 to-amber-800/20 border-amber-500/30',
-}
-
-const STATE_COLORS: Record<string, string> = {
-  ACTIVE:          'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
-  PENDING:         'text-amber-400 bg-amber-400/10 border-amber-400/20',
-  MATURED:         'text-blue-400 bg-blue-400/10 border-blue-400/20',
-  RELEASE_QUEUE:   'text-orange-400 bg-orange-400/10 border-orange-400/20',
-  RELEASED:        'text-teal-400 bg-teal-400/10 border-teal-400/20',
-  AUTO_REINVESTED: 'text-purple-400 bg-purple-400/10 border-purple-400/20',
-  MIGRATED:        'text-zinc-400 bg-zinc-400/10 border-zinc-400/20',
-  WITHDRAWN:       'text-zinc-500 bg-zinc-500/10 border-zinc-500/20',
-}
-
-const TX_ICONS: Record<string, string> = {
-  DEPOSIT:             '↓',
-  INVESTMENT_CREATION: '🔒',
-  PROFIT_ACCRUAL:      '+',
-  PROFIT_CREDIT:       '✦',
-  AUTO_REINVEST:       '↺',
-  WITHDRAWAL_REQUEST:  '↑',
-  WITHDRAWAL_APPROVED: '✓',
-  CAPITAL_RELEASE:     '🔓',
-  MIGRATION_DEBIT:     '→',
-  MIGRATION_CREDIT:    '←',
-  BONUS:               '★',
+const PLAN_APY: Record<string, string> = {
+  WERTCHAIN_START: '5%', WERTCHAIN_GROWTH: '8%',
+  WERTCHAIN_PROFESSIONAL: '15%', WERTCHAIN_ELITE: '40%',
 }
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n)
-
-const fmtDate = (d: string | null | undefined) => {
-  if (!d) return "Pending activation"
-  return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-}
-function daysLeft(maturity: string | null | undefined) {
-  if (!maturity) return null
-  const diff = new Date(maturity).getTime() - Date.now()
-  return Math.max(0, Math.ceil(diff / 86400000))
+const fmtDate = (d?: string | null) =>
+  d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+function daysLeft(m?: string | null) {
+  if (!m) return null
+  return Math.max(0, Math.ceil((new Date(m).getTime() - Date.now()) / 86400000))
 }
 
-function ProgressBar({ value, max }: { value: number; max: number }) {
-  const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0
-  return (
-    <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-      <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
-    </div>
-  )
-}
-
-// ── main component ─────────────────────────────────────────────────────────
 export default function Dashboard() {
   const supabase = createClient()
   const [wallet, setWallet] = useState<Wallet | null>(null)

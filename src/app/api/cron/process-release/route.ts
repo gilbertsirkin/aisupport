@@ -23,6 +23,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { adminClient, postLedgerTransaction } from "@/lib/ledger";
+import { sendContractMaturedEmail } from "@/lib/email/mailer";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest) {
   // Fetch RELEASE_QUEUE contracts whose delay has elapsed
   const { data: contracts, error: contractsErr } = await adminClient
     .from("wc_contracts")
-    .select("id, user_id, principal_amount, release_eligible_date")
+    .select("id, user_id, principal_amount, expected_profit, plan_tier, maturity_date, release_eligible_date")
     .eq("state", "RELEASE_QUEUE")
     .lte("release_eligible_date", today);   // release_eligible_date <= today
 
@@ -140,6 +141,22 @@ export async function GET(req: NextRequest) {
       }).then(({ error }) => {
         if (error) console.error(`Wallet cache update failed for ${contract.user_id}:`, error.message);
       });
+
+      // Email — non-blocking, cron must not fail due to email issues
+      const principal = Number(contract.principal_amount)
+      const profit = Number(contract.expected_profit ?? 0)
+      adminClient.from("wc_users").select("email, full_name").eq("id", contract.user_id).single()
+        .then(({ data: u }) => {
+          if (u) sendContractMaturedEmail(
+            { email: u.email, full_name: u.full_name },
+            {
+              plan_tier: contract.plan_tier ?? "Investment",
+              principal,
+              total_return: principal + profit,
+              matures_at: contract.maturity_date ?? new Date().toISOString(),
+            }
+          )
+        }).catch(() => {})
 
       processed++;
     } catch (err) {
