@@ -183,7 +183,7 @@ export async function POST(req: NextRequest) {
             { email: u.email, full_name: u.full_name },
             { amount: Number(totalStr), rejection_reason: rejection_reason! }
           )
-        }).then(() => {}, () => {})
+        }).catch(() => {})
 
       return NextResponse.json({
         message: "Withdrawal rejected. Funds returned to user wallet.",
@@ -295,7 +295,7 @@ export async function POST(req: NextRequest) {
           { email: u.email, full_name: u.full_name },
           { amount: Number(totalStr), withdrawal_type: withdrawal.withdrawal_type, tx_hash: tx_hash }
         )
-      }).then(() => {}, () => {})
+      }).catch(() => {})
 
     return NextResponse.json({
       message: "Withdrawal approved.",

@@ -57,8 +57,7 @@ export async function POST(req: NextRequest) {
       const { data } = await adminClient
         .from("wc_users")
         .select("email, full_name")
-        /* TypeScript guard: authUser.id must exist */
-        .eq("id", authUser.id!)
+        .eq("id", authUser.id)
         .single()
       if (data) { wcUser = data; break }
       await new Promise(r => setTimeout(r, 800 * (i + 1))) // back-off: 0.8s, 1.6s, 2.4s…

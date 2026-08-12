@@ -5,60 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
 
-
-const PLAN_COLORS: Record<string, string> = {
-  conservative:
-    "from-emerald-950/40 to-emerald-900/20 border-emerald-500/30",
-  moderate:
-    "from-blue-950/40 to-blue-900/20 border-blue-500/30",
-  aggressive:
-    "from-amber-950/40 to-amber-900/20 border-amber-500/30",
-  vip:
-    "from-purple-950/40 to-purple-900/20 border-purple-500/30",
-};
-
-
-const STATE_COLORS: Record<string, string> = {
-  active: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
-  completed: "text-blue-400 border-blue-500/30 bg-blue-500/10",
-  pending: "text-amber-400 border-amber-500/30 bg-amber-500/10",
-  cancelled: "text-red-400 border-red-500/30 bg-red-500/10",
-  failed: "text-red-400 border-red-500/30 bg-red-500/10",
-};
-
-
-function ProgressBar({
-  value,
-  max,
-}: {
-  value: number;
-  max: number;
-}) {
-  const percentage =
-    max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
-
-  return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
-      <div
-        className="h-full rounded-full bg-emerald-500 transition-all"
-        style={{ width: `${percentage}%` }}
-      />
-    </div>
-  );
-}
-
-
-const TX_ICONS: Record<string, string> = {
-  deposit: "↓",
-  withdrawal: "↑",
-  investment: "◆",
-  profit: "↗",
-  fee: "−",
-  bonus: "★",
-  refund: "↩",
-};
-
-
 interface Wallet {
   available_balance: number
   locked_capital: number

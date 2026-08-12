@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
         { amount: Number(deposit.amount), currency: deposit.currency, payment_reference: txHashClean, created_at: new Date().toISOString() }
       )
     })
-    .then(() => {}, () => {})
+    .catch(() => {})
 
   return NextResponse.json({
     message: "Transaction hash submitted. Your deposit is now queued for admin review.",

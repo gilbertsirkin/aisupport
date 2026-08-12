@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
               matures_at: contract.maturity_date ?? new Date().toISOString(),
             }
           )
-        }).then(() => {}, () => {})
+        }).catch(() => {})
 
       processed++;
     } catch (err) {

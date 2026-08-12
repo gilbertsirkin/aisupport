@@ -350,7 +350,9 @@ export async function POST(req: NextRequest) {
       ledger_tx_id: creditTxId,
     });
 
-    adminClient.from("wc_users").select("email, full_name").eq("id", userId).single()
+    Promise.resolve(
+      adminClient.from("wc_users").select("email, full_name").eq("id", userId).single()
+    )
       .then(({ data: u }) => {
         if (u) sendMigrationApprovedEmail(
           { email: u.email, full_name: u.full_name },
