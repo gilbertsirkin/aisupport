@@ -111,13 +111,24 @@ export async function POST(req: NextRequest) {
       reason: rejection_reason!,
     });
 
-    adminClient.from("wc_users").select("email, full_name").eq("id", userId).single()
-      .then(({ data: u }) => {
-        if (u) sendDepositRejectedEmail(
-          { email: u.email, full_name: u.full_name },
-          { amount, currency: deposit.currency, rejection_reason: rejection_reason! }
-        )
-      }).catch(() => {})
+    void (async () => {
+      try {
+        const { data: u } = await adminClient
+          .from("wc_users")
+          .select("email, full_name")
+          .eq("id", userId)
+          .single();
+
+        if (u) {
+          sendDepositRejectedEmail(
+            { email: u.email, full_name: u.full_name },
+            { amount, currency: deposit.currency, rejection_reason: rejection_reason! }
+          );
+        }
+      } catch {
+        // fire-and-forget notification is non-critical
+      }
+    })();
 
     return NextResponse.json({ message: "Deposit rejected.", deposit_id });
   }
@@ -191,13 +202,24 @@ export async function POST(req: NextRequest) {
       reason: admin_notes ?? "Deposit confirmed by admin",
     });
 
-    adminClient.from("wc_users").select("email, full_name").eq("id", userId).single()
-      .then(({ data: u }) => {
-        if (u) sendDepositApprovedEmail(
-          { email: u.email, full_name: u.full_name },
-          { amount, currency: deposit.currency, payment_reference: deposit.payment_reference ?? "" }
-        )
-      }).catch(() => {})
+    void (async () => {
+      try {
+        const { data: u } = await adminClient
+          .from("wc_users")
+          .select("email, full_name")
+          .eq("id", userId)
+          .single();
+
+        if (u) {
+          sendDepositApprovedEmail(
+            { email: u.email, full_name: u.full_name },
+            { amount, currency: deposit.currency, payment_reference: deposit.payment_reference ?? "" }
+          );
+        }
+      } catch {
+        // fire-and-forget notification is non-critical
+      }
+    })();
 
     return NextResponse.json({
       message: `Deposit approved. $${amount.toFixed(2)} credited to user available balance.`,

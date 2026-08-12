@@ -52,8 +52,12 @@ async function getRecipients(segment: string, specificEmail?: string) {
       .select("email, full_name, wc_wallet_balances(available_balance, locked_capital)")
       .eq("is_active", true)
     if (!data) return []
-    return data.filter((u: { wc_wallet_balances?: { available_balance: number; locked_capital: number }[] }) => {
-      const wb = Array.isArray(u.wc_wallet_balances) ? u.wc_wallet_balances[0] : u.wc_wallet_balances
+    return data.filter((u: {
+      email: string
+      full_name: string
+      wc_wallet_balances: { available_balance: number; locked_capital: number } | null
+    }) => {
+      const wb = u.wc_wallet_balances
       return (!wb || (Number(wb.available_balance) === 0 && Number(wb.locked_capital) === 0))
     })
   }

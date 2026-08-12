@@ -398,7 +398,7 @@ export default function AdminPanel() {
           {TABS.map(t => (
             <button
               key={t.id}
-              onClick={() => { setTab(t.id); if (t.id === 'email_log') loadEmailLog() }}}
+              onClick={() => setTab(t.id)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors relative
                 ${tab === t.id
                   ? 'text-amber-400 border-b-2 border-amber-400 -mb-px'
