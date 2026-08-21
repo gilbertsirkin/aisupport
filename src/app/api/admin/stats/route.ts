@@ -44,13 +44,13 @@ export async function GET() {
       .order("created_at", { ascending: false })
       .limit(100),
     adminClient.from("wc_users")
-      .select("*, wc_wallet_balances(available_balance, locked_capital)")
+      .select("id, full_name, email, kyc_status, is_active, is_suspended, created_at")
       .order("created_at", { ascending: false })
       .limit(200),
   ]);
 
-  const totalLockedCapital    = (wallets ?? []).reduce((s, w) => s + (w.locked_capital    as number), 0);
-  const totalAvailableBalance = (wallets ?? []).reduce((s, w) => s + (w.available_balance as number), 0);
+  const totalLockedCapital    = (wallets ?? []).reduce((s, w) => s + Number(w.locked_capital    ?? 0), 0);
+  const totalAvailableBalance = (wallets ?? []).reduce((s, w) => s + Number(w.available_balance ?? 0), 0);
 
   return NextResponse.json({
     stats: {
